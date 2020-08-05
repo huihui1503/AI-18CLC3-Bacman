@@ -13,7 +13,7 @@ class Maze():
         self.map = []  # wall == 1 , food == 2 , monster == 3 , bac-man == 4
         self.pacman = ()
         self.monster = []  # list of monster
-        self.food = []  # tuple of list [(x,y),(x,y)]
+        self.food = []  #  list [[y,x],[y,x]]
         self.row = 0  # size of row
         self.col = 0  # size of collum
         self.frontier = []
@@ -22,7 +22,6 @@ class Maze():
         self.time = 0
         self.level = 0  # level of game
         self.maze_map = 0  # level of map
-
     def add_level(self, level, maze_map):
         self.maze_map = maze_map
         self.level = level
@@ -38,7 +37,7 @@ class Maze():
             self.map.append(temp)
         line = file.readline().split(" ")
         self.map[int(line[0])][int(line[1])] = 4
-        self.pacman = (int(line[0]), int(line[1]))
+        self.pacman = [int(line[0]), int(line[1])]
         file.close()
         if self.level == 1:
             self.random_object(1, 0)
@@ -83,7 +82,7 @@ class Maze():
             check = abs(x - self.pacman[1]) + abs(y - self.pacman[0])
             if self.map[y][x] == 0 and check > 5:
                 self.map[y][x] = 2
-                self.food.append((y, x))
+                self.food.append([y, x])
                 food -= 1
         while monster > 0:
             x = numpy.random.randint(self.col)
@@ -91,7 +90,7 @@ class Maze():
             check = abs(x - self.pacman[1]) + abs(y - self.pacman[0])
             if self.map[y][x] == 0 and check > 5:
                 self.map[y][x] = 3
-                self.monster.append((y, x))
+                self.monster.append([y, x])
                 monster -= 1
 
     def draw_map(self):
@@ -121,9 +120,10 @@ class Maze():
             y += 30
 
     def run_level4(self):
+        cost_path=[[100 for _ in range(self.row)]for _ in range(self.collum)]
         check_stop = True
         pacman, img_food, img_monster = self.create_image_variable()
-         x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
+        x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
         y = (HEIGHT - (self.row + 2) * 30) / 2 + 30
         while check_stop:
             for (a, b) in zip(img_food, self.food):
@@ -162,48 +162,5 @@ class Maze():
         return pacman, img_food, img_monster
 
 
-    # Min max algorithm
-    def Utility(self):
-
-    def MaxValue(self, step):
-    if self.step == 4 or self.Utility() != 0:
-        return self.Utility()
-    v=-9999
-    for i in range(3):
-        for j in range(3):
-            if data[i][j] == 0:
-                data[i][j]=1
-                self.step += 1
-                temp=self.MinValue(data, state)
-                if temp > v:
-                    v=temp
-                    state[0]=i
-                    state[1]=j
-                # if v==1:
-                    # data[i][j] = 0
-                    # self.step -= 1
-                    # break
-                data[i][j]=0
-                self.step -= 1
-    return v
-    def MinValue(self, data, state):
-    if self.step == 9 or self.Utility() != 0:
-        return self.Utility()
-    v=9999
-    for i in range(3):
-        for j in range(3):
-            if data[i][j] == 0:
-                data[i][j]=-1
-                self.step += 1
-                temp=self.MaxValue(data, state)
-                if temp < v:
-                    v=temp
-                    state[0]=i
-                    state[1]=j
-                # if v==-1:
-                    # data[i][j] = 0
-                    # self.step -= 1
-                    # break
-                data[i][j]=0
-                self.step -= 1
-    return v
+    #find food and mosnter in the sight
+    def
