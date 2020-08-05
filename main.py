@@ -38,7 +38,7 @@ while running:
     if level == 3:
         pass
     if level == 4:
-        pass
+       main.run_level4()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False

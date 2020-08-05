@@ -3,9 +3,6 @@ import pygame
 import numpy
 filename = os.getcwd()
 wall = pygame.image.load(filename + "/PICTURE/wall.png")
-monster = pygame.image.load(filename + "/PICTURE/monsters.png")
-food = pygame.image.load(filename + "/PICTURE/venus.png")
-pacman = pygame.image.load(filename + "/PICTURE/ufo.png")
 HEIGHT = 750
 WEIGHT = 1300
 
@@ -114,11 +111,99 @@ class Maze():
             for j in range(self.col):
                 if self.map[i][j] == 1:
                     self.screen.blit(wall, (x, y))
-                #elif self.map[i][j] == 2:
-                    #self.screen.blit(food, (x, y))
-                #elif self.map[i][j] == 3:
-                    #self.screen.blit(monster, (x, y))
-                #elif self.map[i][j] == 4:
-                    #self.screen.blit(pacman, (x, y))
+                # elif self.map[i][j] == 2:
+                    # self.screen.blit(food, (x, y))
+                # elif self.map[i][j] == 3:
+                    # self.screen.blit(monster, (x, y))
+                # elif self.map[i][j] == 4:
+                    # self.screen.blit(pacman, (x, y))
                 x += 30
             y += 30
+
+    def run_level4(self):
+        check_stop = True
+        pacman, img_food, img_monster = self.create_image_variable()
+         x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
+        y = (HEIGHT - (self.row + 2) * 30) / 2 + 30
+        while check_stop:
+            for (a, b) in zip(img_food, self.food):
+                self.screen.blit(a, (x + 30 * b[1], y + 30 * b[0]))
+            for (a, b) in zip(img_monster, self.monster):
+                self.screen.blit(a, (x + 30 * b[1], y + 30 * b[0]))
+            self.screen.blit(
+                pacman, (x + 30 * self.pacman[1], y + 30 * self.pacman[0]))
+            if self.check_stop():
+                check_stop = False
+            pygame.display.update()
+
+    def check_stop(self):
+        # check when all of food is eaten or monster collides with pacman
+        # when monster collides with pacman, the position of bacman should be changed into (-1,-1)
+        if len(self.food) == 0 or (self.pacman[0] == -1 and self.pacman[1] == -1):
+            return True
+        return False
+
+    def create_image_variable(self):
+        # create variable contain image of object
+        pacman = pygame.image.load(filename + "/PICTURE/ufo.png")
+        img_monster = [pygame.image.load(filename + "/PICTURE/monsters.png") if i % 2 == 0 else pygame.image.load(
+            filename + "/PICTURE/monsters.png") for i in range(len(self.monster))]
+        img_food = []
+        for i in range(len(self.food):
+            if i % 2 == 0:
+                img_food.append(pygame.image.load(
+                    filename + "/PICTURE/venus.png"))
+            elif i % 3 == 0:
+                img_food.append(pygame.image.load(
+                    filename + "/PICTURE/global.png"))
+            else:
+                img_food.append(pygame.image.load(
+                    filename + "/PICTURE/planet.png"))
+        return pacman, img_food, img_monster
+
+
+    # Min max algorithm
+    def Utility(self):
+
+    def MaxValue(self, step):
+    if self.step == 4 or self.Utility() != 0:
+        return self.Utility()
+    v=-9999
+    for i in range(3):
+        for j in range(3):
+            if data[i][j] == 0:
+                data[i][j]=1
+                self.step += 1
+                temp=self.MinValue(data, state)
+                if temp > v:
+                    v=temp
+                    state[0]=i
+                    state[1]=j
+                # if v==1:
+                    # data[i][j] = 0
+                    # self.step -= 1
+                    # break
+                data[i][j]=0
+                self.step -= 1
+    return v
+    def MinValue(self, data, state):
+    if self.step == 9 or self.Utility() != 0:
+        return self.Utility()
+    v=9999
+    for i in range(3):
+        for j in range(3):
+            if data[i][j] == 0:
+                data[i][j]=-1
+                self.step += 1
+                temp=self.MaxValue(data, state)
+                if temp < v:
+                    v=temp
+                    state[0]=i
+                    state[1]=j
+                # if v==-1:
+                    # data[i][j] = 0
+                    # self.step -= 1
+                    # break
+                data[i][j]=0
+                self.step -= 1
+    return v
