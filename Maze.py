@@ -124,18 +124,26 @@ class Maze():
         cost_path = [[100 for _ in range(self.row)]for _ in range(self.collum)]
         check_stop = True
         pacman, img_food, img_monster = self.create_image_variable()
-        x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
-        y = (HEIGHT - (self.row + 2) * 30) / 2 + 30
         while check_stop:
-            for (a, b) in zip(img_food, self.food):
-                self.screen.blit(a, (x + 30 * b[1], y + 30 * b[0]))
-            for (a, b) in zip(img_monster, self.monster):
-                self.screen.blit(a, (x + 30 * b[1], y + 30 * b[0]))
-            self.screen.blit(
-                pacman, (x + 30 * self.pacman[1], y + 30 * self.pacman[0]))
+            self.movement(pacman, img_food, img_monster)
+            position = []
+            self.MAX_VALUE(self.pacman, 0, position, -999999)
+            self.pacman = position
+            for i, a in enumerate(self.food):
+                pass
             if self.check_stop():
                 check_stop = False
             pygame.display.update()
+
+    def movement(self, pacman, img_food, img_monster):
+        x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
+        y = (HEIGHT - (self.row + 2) * 30) / 2 + 30
+        for (a, b) in zip(img_food, self.food):
+            self.screen.blit(a, (x + 30 * b[1], y + 30 * b[0]))
+        for (a, b) in zip(img_monster, self.monster):
+            self.screen.blit(a, (x + 30 * b[1], y + 30 * b[0]))
+        self.screen.blit(
+            pacman, (x + 30 * self.pacman[1], y + 30 * self.pacman[0]))
 
     def check_stop(self):
         # check when all of food is eaten or monster collides with pacman
@@ -161,3 +169,104 @@ class Maze():
                 img_food.append(pygame.image.load(
                     filename + "/PICTURE/planet.png"))
         return pacman, img_food, img_monster
+ # min max algorithm
+
+    def MAX_VALUE(self, state, step, position, a):
+        check = self.TERMINAL_TEST(state)
+        if check:
+            if check == 1:
+                return self.point - step + 20
+            if check == -1:
+                return self.point - step - 2**(20 - step)
+        v = -999999
+        temp_act = self.ACTION(state, 4)
+        for i in temp_act:
+            temp_value = self.map[i[0]][i[1]]
+            self.map[i[0]][i[1]] = 4
+            temp = self.MIN_VALUE(i, step + 1, position, a)
+            self.map[i[0]][i[1]] = temp_value
+            if temp > v:
+                v = temp
+                position = i
+            a = max(a, v)
+        return v
+
+    def MIN_VALUE(self, state, step, position, a):
+        check = self.TERMINAL_TEST(state)
+        if check:
+            if check == 1:
+                temp_monster = self.monster.deepcopy()
+                self.monster = self.MONSTER_ACTION(state)
+                check = self.TERMINAL_TEST(state)
+                self.monster = temp_monster
+                if check == -1:
+                    return self.point - step + 20 - 2**(20 - step)
+                else:
+                    return self.point - step + 20
+            if check == -1:
+                return self.point - step - 2**(20 - step)
+        if (self.point - step) < a:
+            return self.point - step
+        temp_monster = self.monster.deepcopy()
+        self.monster = self.MONSTER_ACTION(state)
+        v = self.MAX_VALUE(state, step, position)
+        self.monster = temp_monster
+        return v
+
+    def ACTION(self, state, value):
+        # value to differentiate whether monster or pacman
+        temp_act = []
+        if state[0] - 1 > 0 and self.map[state[0] - 1][state[1]] != 1 and self.map[state[0] - 1][state[1]] != value:
+            temp_act.append([state[0] - 1, state[1]])
+        if state[0] + 1 < self.row and self.map[state[0] + 1][state[1]] != 1 and self.map[state[0] + 1][state[1]] != value:
+            temp_act.append([state[0] + 1, state[1]])
+        if state[1] - 1 > 0 and self.map[state[0]][state[1] - 1] != 1 and self.map[state[0]][state[1] - 1] != value:
+            temp_act.append([state[0], state[1] - 1])
+        if state[1] + 1 < self.collum and self.map[state[0]][state[1] + 1] != 1 and self.map[state[0]][state[1] + 1] != value:
+            temp_act.append([state[0], state[1] + 1])
+        return temp_act
+
+    def TERMINAL_TEST(self, state):
+        for i in self.food:
+            if i[0] == state[0] and i[1] == state[1]:
+                return 1
+        for i in self.monster:
+            if i[0] == state[0] and i[1] == state[1]:
+                return -1
+        return 0
+
+    def MONSTER_ACTION(self, state):
+        action = []
+        for i in self.monster:
+            action.append(self.BFS(i, state))
+        return action
+
+    def BFS(self, monster, goal):
+        return_value = []
+        check_stop = True
+        frontier_parent = []
+        expanded_parent = []
+        self.frontier.append(monster)
+        frontier_parent.append(-1)
+        while check_stop:
+            self.expanded.append(self.frontier[0])
+            self.frontier = self.frontier[1:]
+            expanded_parent.append(frontier_parent[0])
+            frontier_parent = frontier_parent[1:]
+            adjacency_node = self.ACTION(
+                self.expanded[len(self.expanded) - 1], 1)
+            for i in adjacency_node:
+                if not i in self.expanded:
+                    if i[0] == goal[0] and i[1] == goal[1]:
+                        parent_pos = len(self.expanded) - 1
+                        while parent_pos != -1:
+                            return_value.append(self.expanded[parent_pos])
+                            parent_pos = expanded_parent[parent_pos]
+                        check_stop = False
+                    else:
+                        if not i in self.frontier:
+                            frontier_parent.append(len(self.expanded) - 1)
+                            self.frontier.append(i)
+        self.expanded.clear()
+        self.frontier.clear()
+        return return_value[1]
