@@ -3,6 +3,9 @@ import pygame
 import numpy
 filename = os.getcwd()
 wall = pygame.image.load(filename + "/PICTURE/wall.png")
+image_food = pygame.image.load(filename + "/PICTURE/venus.png")
+image_monster = pygame.image.load(filename + "/PICTURE/monsters.png")
+image_pacman = pygame.image.load(filename + "/PICTURE/ufo.png")
 HEIGHT = 750
 WEIGHT = 1300
 
@@ -123,7 +126,6 @@ class Maze():
     def run_level4(self):
         cost_path = [[100 for _ in range(self.row)]for _ in range(self.collum)]
         check_stop = True
-        pacman, img_food, img_monster = self.create_image_variable()
         while check_stop:
             self.movement(pacman, img_food, img_monster)
             position = []
@@ -135,15 +137,15 @@ class Maze():
                 check_stop = False
             pygame.display.update()
 
-    def movement(self, pacman, img_food, img_monster):
+    def movement(self):
         x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
         y = (HEIGHT - (self.row + 2) * 30) / 2 + 30
-        for (a, b) in zip(img_food, self.food):
-            self.screen.blit(a, (x + 30 * b[1], y + 30 * b[0]))
-        for (a, b) in zip(img_monster, self.monster):
-            self.screen.blit(a, (x + 30 * b[1], y + 30 * b[0]))
+        for i in self.food:
+            self.screen.blit(image_food, (x + 30 * b[1], y + 30 * b[0]))
+        for i in self.monster:
+            self.screen.blit(image_monster, (x + 30 * b[1], y + 30 * b[0]))
         self.screen.blit(
-            pacman, (x + 30 * self.pacman[1], y + 30 * self.pacman[0]))
+            image_pacman, (x + 30 * self.pacman[1], y + 30 * self.pacman[0]))
 
     def check_stop(self):
         # check when all of food is eaten or monster collides with pacman
@@ -151,24 +153,6 @@ class Maze():
         if len(self.food) == 0 or (self.pacman[0] == -1 and self.pacman[1] == -1):
             return True
         return False
-
-    def create_image_variable(self):
-        # create variable contain image of object
-        pacman = pygame.image.load(filename + "/PICTURE/ufo.png")
-        img_monster = [pygame.image.load(filename + "/PICTURE/monsters.png") if i % 2 == 0 else pygame.image.load(
-            filename + "/PICTURE/monsters.png") for i in range(len(self.monster))]
-        img_food = []
-        for i in range(len(self.food)):
-            if i % 2 == 0:
-                img_food.append(pygame.image.load(
-                    filename + "/PICTURE/venus.png"))
-            elif i % 3 == 0:
-                img_food.append(pygame.image.load(
-                    filename + "/PICTURE/global.png"))
-            else:
-                img_food.append(pygame.image.load(
-                    filename + "/PICTURE/planet.png"))
-        return pacman, img_food, img_monster
  # min max algorithm
 
     def MAX_VALUE(self, state, step, position, a):

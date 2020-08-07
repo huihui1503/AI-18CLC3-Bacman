@@ -13,16 +13,15 @@ screen = pygame.display.set_mode((WEIGHT, HEIGHT))
 pygame.display.set_caption("Pac-man")
 # background
 background = pygame.image.load(filename + "/PICTURE/background1.jpg")
-screen.blit(background, (0, 0))
 # player
-player_x = 370
-player_y = 480
 running = True
 level_running = False
 main = Maze.Maze(screen)
 while running:
     level = 0
     maze_map = 0
+    screen.fill(0)
+    screen.blit(background, (0, 0))
     while not(level_running):  # check enter level and maze
         level = int(input("Enter level (1-4): "))
         maze_map = int(input("Enter map (1-5): "))
@@ -30,7 +29,7 @@ while running:
             level_running = True
             main.add_level(level, maze_map)
             main.read_data("map" + str(maze_map) + ".txt")
-            main.draw_map()
+    main.draw_map()
     if level == 1:
         pass
     if level == 2:
@@ -43,4 +42,4 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    pygame.display.update()
+    pygame.display.flip()
