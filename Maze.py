@@ -13,7 +13,7 @@ class Maze():
         self.map = []  # wall == 1 , food == 2 , monster == 3 , bac-man == 4
         self.pacman = ()
         self.monster = []  # list of monster
-        self.food = []  #  list [[y,x],[y,x]]
+        self.food = []  # list [[y,x],[y,x]]
         self.row = 0  # size of row
         self.col = 0  # size of collum
         self.frontier = []
@@ -22,6 +22,7 @@ class Maze():
         self.time = 0
         self.level = 0  # level of game
         self.maze_map = 0  # level of map
+
     def add_level(self, level, maze_map):
         self.maze_map = maze_map
         self.level = level
@@ -120,7 +121,7 @@ class Maze():
             y += 30
 
     def run_level4(self):
-        cost_path=[[100 for _ in range(self.row)]for _ in range(self.collum)]
+        cost_path = [[100 for _ in range(self.row)]for _ in range(self.collum)]
         check_stop = True
         pacman, img_food, img_monster = self.create_image_variable()
         x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
@@ -149,7 +150,7 @@ class Maze():
         img_monster = [pygame.image.load(filename + "/PICTURE/monsters.png") if i % 2 == 0 else pygame.image.load(
             filename + "/PICTURE/monsters.png") for i in range(len(self.monster))]
         img_food = []
-        for i in range(len(self.food):
+        for i in range(len(self.food)):
             if i % 2 == 0:
                 img_food.append(pygame.image.load(
                     filename + "/PICTURE/venus.png"))
@@ -160,7 +161,3 @@ class Maze():
                 img_food.append(pygame.image.load(
                     filename + "/PICTURE/planet.png"))
         return pacman, img_food, img_monster
-
-
-    #find food and mosnter in the sight
-    def
