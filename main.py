@@ -20,8 +20,6 @@ main = Maze.Maze(screen)
 while running:
     level = 0
     maze_map = 0
-    screen.fill(0)
-    screen.blit(background, (0, 0))
     while not(level_running):  # check enter level and maze
         level = int(input("Enter level (1-4): "))
         maze_map = int(input("Enter map (1-5): "))

@@ -6,6 +6,7 @@ wall = pygame.image.load(filename + "/PICTURE/wall.png")
 image_food = pygame.image.load(filename + "/PICTURE/venus.png")
 image_monster = pygame.image.load(filename + "/PICTURE/monsters.png")
 image_pacman = pygame.image.load(filename + "/PICTURE/ufo.png")
+image_background = pygame.image.load(filename + "/PICTURE/background1.jpg")
 HEIGHT = 750
 WEIGHT = 1300
 
@@ -98,6 +99,8 @@ class Maze():
                 monster -= 1
 
     def draw_map(self):
+        self.screen.fill(0)
+        self.screen.blit(image_background, (0, 0))
         x = (WEIGHT - (self.col + 2) * 30) / 2
         y = (HEIGHT - (self.row + 2) * 30) / 2
         for i in range(self.col + 2):
@@ -114,20 +117,22 @@ class Maze():
             for j in range(self.col):
                 if self.map[i][j] == 1:
                     self.screen.blit(wall, (x, y))
-                # elif self.map[i][j] == 2:
-                    # self.screen.blit(food, (x, y))
-                # elif self.map[i][j] == 3:
-                    # self.screen.blit(monster, (x, y))
-                # elif self.map[i][j] == 4:
-                    # self.screen.blit(pacman, (x, y))
+                elif self.map[i][j] == 2:
+                    self.screen.blit(image_food, (x, y))
+                elif self.map[i][j] == 3:
+                    self.screen.blit(image_monster, (x, y))
+                elif self.map[i][j] == 4:
+                    self.screen.blit(image_pacman, (x, y))
                 x += 30
             y += 30
 
     def run_level4(self):
         cost_path = [[100 for _ in range(self.row)]for _ in range(self.collum)]
         check_stop = True
+        x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
+        y = (HEIGHT - (self.row + 2) * 30) / 2 + 30
         while check_stop:
-            self.movement(pacman, img_food, img_monster)
+            self.movement()
             position = []
             self.MAX_VALUE(self.pacman, 0, position, -999999)
             self.pacman = position
