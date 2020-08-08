@@ -21,7 +21,7 @@ while running:
     if level == 1:
         pass
     if level == 2:
-        pass
+        main.run_level2()
     if level == 3:
         main.test()
     if level == 4:
