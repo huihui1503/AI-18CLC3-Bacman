@@ -24,5 +24,6 @@ while running:
         pass
     if level == 3:
         main.test()
+        break
     if level == 4:
         main.run_level4()

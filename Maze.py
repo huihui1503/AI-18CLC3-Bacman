@@ -36,12 +36,11 @@ class Maze():
 
     def test(self):
         i = 1
-        while True:
+        while i < 12:
             self.map[0][i - 1] = 0
             self.map[0][i] = 4
             self.draw_map()
-            if i < 12:
-                i += 1
+            i += 1
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
