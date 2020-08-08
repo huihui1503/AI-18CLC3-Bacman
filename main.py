@@ -3,20 +3,11 @@ import os
 import Maze
 pygame.init()
 filename = os.getcwd()
-print(filename)
-# create screen
-HEIGHT = 750
-WEIGHT = 1300
-screen = pygame.display.set_mode((WEIGHT, HEIGHT))
 
-#title and icon
-pygame.display.set_caption("Pac-man")
-# background
-background = pygame.image.load(filename + "/PICTURE/background1.jpg")
 # player
 running = True
 level_running = False
-main = Maze.Maze(screen)
+main = Maze.Maze()
 while running:
     level = 0
     maze_map = 0
@@ -27,17 +18,11 @@ while running:
             level_running = True
             main.add_level(level, maze_map)
             main.read_data("map" + str(maze_map) + ".txt")
-    main.draw_map()
     if level == 1:
         pass
     if level == 2:
         pass
     if level == 3:
-        pass
+        main.test()
     if level == 4:
-        # main.run_level4()
-        pass
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    pygame.display.flip()
+        main.run_level4()
