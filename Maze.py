@@ -3,6 +3,7 @@ import pygame
 import numpy
 import time
 
+clock = pygame.time.Clock()
 filename = os.getcwd()
 wall = pygame.image.load(filename + "/PICTURE/wall.png")
 image_food = pygame.image.load(filename + "/PICTURE/venus.png")
@@ -29,10 +30,11 @@ class Maze():
         self.col = 0  # size of collum
         self.frontier = []
         self.expanded = []
-        self.point = 0
+        self.point = 20
         self.time = 0
         self.level = 0  # level of game
         self.maze_map = 0  # level of map
+        self.action_level2 = {}
 
     def test(self):
         i = 1
@@ -145,20 +147,381 @@ class Maze():
                 x += 30
             y += 30
 
+        # level 2
+
+    def path_return(self, parent, start, goal):
+        path = []
+        while goal != start:
+            path.append(goal)
+            goal = parent[goal]
+
+        path.append(start)
+        path.reverse()
+        return path
+
+    def breadth_first_search(self, graph, start, goal):
+        explored = []
+        frontier = [start]
+        parent = {start: None}
+        found = False
+        if start == goal:
+            return [goal], [goal], True
+        while len(frontier) and not found:
+            node = frontier.pop(0)
+            if node not in explored:
+                explored.append(node)
+                neighbours = graph[node]
+                for neighbour in neighbours:
+                    if neighbour not in explored:
+                        frontier.append(neighbour)
+                        parent[neighbour] = node
+                        if neighbour == goal:
+                            found = True
+                            break
+        if found:
+            path = self.path_return(parent, start, goal)
+            return path, explored + [goal], True
+        else:
+            return "There is no path between {} and {}".format(start, goal), explored, False
+
+    def check_frontier(self, node, frontier):
+        for i in range(0, len(frontier)):
+            current = frontier[i]
+            if node == current[0]:
+                return i, True
+
+        return -1, False
+
+    def check_cost(self, node, frontier, cost):
+        for i in range(0, len(frontier)):
+            current = frontier[i]
+            if node == current[0] and cost < current[1]:
+                return True
+        return False
+
+    def sort_UCS_Astar(self, a, n):
+        # sort by cost
+        for i in range(0, n - 1):
+            for j in range(i + 1, n):
+                if a[i][1] > a[j][1]:
+                    index1 = a.index(a[i])
+                    index2 = a.index(a[j])
+                    a[index1], a[index2] = a[index2], a[index1]
+        # if the cost of some nodes is equal then sort by the order of node
+        for i in range(0, n - 1):
+            for j in range(i + 1, n):
+                if (a[i][1] == a[j][1]) and (a[i][0] > a[j][0]):
+                    index1 = a.index(a[i])
+                    index2 = a.index(a[j])
+                    a[index1], a[index2] = a[index2], a[index1]
+
+    def uniform_cost_search(self, graph, start, goal):
+        explored = []
+        frontier = [(start, 0)]
+        found = False
+        parent = {start: None}
+        current_cost = {start: 0}
+        if start == goal:
+            return [goal], [goal], True
+        while len(frontier) and not found:
+            current = frontier.pop(0)
+            node = current[0]
+            explored.append(node)
+            if node == goal:
+                found = True
+                break
+            neighbours = graph[node]
+            for neighbour in neighbours:
+                cost_node = 1
+                cost = current_cost[node] + cost_node
+                if neighbour not in explored:
+                    pos, check = self.check_frontier(neighbour, frontier)
+                    if not check:
+                        frontier.append((neighbour, cost))
+                        current_cost[neighbour] = cost
+                        parent[neighbour] = node
+                    elif check and self.check_cost(neighbour, frontier, cost):
+                        frontier.pop(pos)
+                        frontier.append((neighbour, cost))
+                        current_cost[neighbour] = cost
+                        parent[neighbour] = node
+
+                    self.sort_UCS_Astar(frontier, len(frontier))
+
+        if found:
+            path = self.path_return(parent, start, goal)
+            return path, explored, True
+        else:
+            return "There is no path between {} and {}".format(start, goal), explored, False
+
+    def heuristic(self, node, goal):
+        pos = self.action_level2[node]
+        pos_goal = self.action_level2[goal]
+        a = pos[0] + pos[1]
+        b = pos_goal[0] + pos_goal[1]
+        return abs(a - b)
+
+    def sortHeuristic(self, a, n, goal):
+        # sort by heuristic number
+        for i in range(0, n - 1):
+            for j in range(i + 1, n):
+                c = self.heuristic(a[i], goal)
+                d = self.heuristic(a[j], goal)
+                if c < d:
+                    index1 = a.index(a[i])
+                    index2 = a.index(a[j])
+                    a[index1], a[index2] = a[index2], a[index1]
+        # sort by node
+        for i in range(0, n - 1):
+            for j in range(i + 1, n):
+                if (self.heuristic(a[i], goal) == self.heuristic(a[j], goal)) and (a[i] < a[j]):
+                    index1 = a.index(a[i])
+                    index2 = a.index(a[j])
+                    a[index1], a[index2] = a[index2], a[index1]
+
+    def greedy_best_first_search(self, graph, start, goal):
+        explored = []
+        frontier = [start]
+        parent = {start: None}
+        found = False
+        if start == goal:
+            return [goal], [goal], True
+        while len(frontier) and not found:
+            node = frontier.pop(0)
+            if node not in explored:
+                explored.append(node)
+                neighbours = graph[node]
+                self.sortHeuristic(neighbours, len(neighbours), goal)
+                for neighbour in neighbours:
+                    if neighbour not in explored:
+                        frontier.insert(0, neighbour)
+                        parent[neighbour] = node
+                        if neighbour == goal:
+                            found = True
+                            break
+        if found:
+            path = self.path_return(parent, start, goal)
+            return path, explored + [goal], True
+        else:
+            return "There is no path between {} and {}".format(start, goal), explored, False
+
+    def astar_search(self, graph, start, goal):
+        explored = []
+        frontier = [(start, 0)]
+        found = False
+        parent = {start: None}
+        current_cost = {start: 0}
+        if start == goal:
+            return [goal], [goal], True
+        while len(frontier) and not found:
+            current = frontier.pop(0)
+            node = current[0]
+            explored.append(node)
+            if node == goal:
+                found = True
+                break
+            neighbours = graph[node]
+            for neighbour in neighbours:
+                cost_node = 1
+                cost = current_cost[node] + cost_node - \
+                    self.heuristic(node, goal) + \
+                    self.heuristic(neighbour, goal)
+                if neighbour not in explored:
+                    pos, check = self.check_frontier(neighbour, frontier)
+                    if not check:
+                        frontier.append((neighbour, cost))
+                        current_cost[neighbour] = cost
+                        parent[neighbour] = node
+                    elif check and self.check_cost(neighbour, frontier, cost):
+                        frontier.pop(pos)
+                        frontier.append((neighbour, cost))
+                        current_cost[neighbour] = cost
+                        parent[neighbour] = node
+
+                    self.sort_UCS_Astar(frontier, len(frontier))
+
+        if found:
+            path = self.path_return(parent, start, goal)
+            return path, explored, True
+        else:
+            return "There is no path between {} and {}".format(start, goal), explored, False
+
+    def make_graph(self, maze_temp):
+        neighbours = []
+        graph_neighbour_level2 = {}
+        for i in range(self.col):
+            for j in range(self.row):
+                current = maze_temp[j][i]
+                if current[0] == 0 or current[0] == 4 or current[0] == 2:
+                    if i == 0:  # column = 0
+                        right = maze_temp[j][i + 1]
+                        if right[0] == 0 or right[0] == 2 or right[0] == 4:
+                            neighbours.append(right[1])
+                        if j == 0:
+                            bottom = maze_temp[j + 1][i]
+                            if bottom[0] == 0 or bottom[0] == 2 or bottom[0] == 4:
+                                neighbours.append(bottom[1])
+                        elif j == self.row - 1:
+                            top = maze_temp[j - 1][i]
+                            if top[0] == 0 or top[0] == 2 or top[0] == 4:
+                                neighbours.append(top[1])
+                        else:
+                            bottom = maze_temp[j + 1][i]
+                            top = maze_temp[j - 1][i]
+                            if bottom[0] == 0 or bottom[0] == 2 or bottom[0] == 4:
+                                neighbours.append(bottom[1])
+                            if top[0] == 0 or top[0] == 2 or top[0] == 4:
+                                neighbours.append(top[1])
+
+                    elif j == 0:  # row = 0
+                        bottom = maze_temp[j + 1][i]
+                        if bottom[0] == 0 or bottom[0] == 2 or bottom[0] == 4:
+                            neighbours.append(bottom[1])
+                        if i == self.col - 1:
+                            left = maze_temp[j][i - 1]
+                            if left[0] == 0 or left[0] == 2 or left[0] == 4:
+                                neighbours.append(left[1])
+                        else:
+                            left = maze_temp[j][i - 1]
+                            right = maze_temp[j][i + 1]
+                            if left[0] == 0 or left[0] == 2 or left[0] == 4:
+                                neighbours.append(left[1])
+                            if right[0] == 0 or right[0] == 2 or right[0] == 4:
+                                neighbours.append(right[1])
+
+                    elif i == self.col - 1:  # column = col - 1
+                        left = maze_temp[j][i - 1]
+                        if left[0] == 0 or left[0] == 2 or left[0] == 4:
+                            neighbours.append(left[1])
+                        if j == self.row - 1:
+                            top = maze_temp[j - 1][i]
+                            if top[0] == 0 or top[0] == 2 or top[0] == 4:
+                                neighbours.append(top[1])
+                        else:
+                            top = maze_temp[j - 1][i]
+                            bottom = maze_temp[j + 1][i]
+                            if top[0] == 0 or top[0] == 2 or top[0] == 4:
+                                neighbours.append(top[1])
+                            if bottom[0] == 0 or bottom[0] == 2 or bottom[0] == 4:
+                                neighbours.append(bottom[1])
+
+                    elif j == self.row - 1:  # row
+                        top = maze_temp[j - 1][i]
+                        if top[0] == 0 or top[0] == 2 or top[0] == 4:
+                            neighbours.append(top[1])
+                        left = maze_temp[j][i - 1]
+                        right = maze_temp[j][i + 1]
+                        if left[0] == 0 or left[0] == 2 or left[0] == 4:
+                            neighbours.append(left[1])
+                        if right[0] == 0 or right[0] == 2 or right[0] == 4:
+                            neighbours.append(right[1])
+
+                    else:
+                        top = maze_temp[j - 1][i]
+                        bottom = maze_temp[j + 1][i]
+                        left = maze_temp[j][i - 1]
+                        right = maze_temp[j][i + 1]
+                        if top[0] == 0 or top[0] == 2 or top[0] == 4:
+                            neighbours.append(top[1])
+                        if bottom[0] == 0 or bottom[0] == 2 or bottom[0] == 4:
+                            neighbours.append(bottom[1])
+                        if left[0] == 0 or left[0] == 2 or left[0] == 4:
+                            neighbours.append(left[1])
+                        if right[0] == 0 or right[0] == 2 or right[0] == 4:
+                            neighbours.append(right[1])
+                neighbours.sort(reverse=False)
+                graph_neighbour_level2[current[1]] = neighbours
+                neighbours = []
+
+        return graph_neighbour_level2
+
+    def run_level2(self):
+        temp_map = []
+        maze_temp = []
+        for row in range(len(self.map)):
+            for col in range(len(self.map[0])):
+                temp_map.append(0)
+
+            maze_temp.append(temp_map)
+            temp_map = []
+        temp = 0
+        pacman = 0
+        food = 0
+        for i in range(self.col):
+            for j in range(self.row):
+                if self.map[j][i] == 4:
+                    pacman = temp
+                if self.map[j][i] == 2:
+                    food = temp
+                maze_temp[j][i] = [self.map[j][i], temp]
+                self.action_level2[temp] = [j, i]
+                temp += 1
+
+        graph = self.make_graph(maze_temp)
+
+        print("1. BFS")
+        print("2. UCS")
+        print("3. Greedy")
+        print("4. A star")
+        al = input("Choose algorithm: ")
+        if al == 1:
+            path, explore, c = self.breadth_first_search(graph, pacman, food)
+        elif al == 2:
+            path, explore, c = self.uniform_cost_search(graph, pacman, food)
+        elif al == 2:
+            path, explore, c = self.greedy_best_first_search(
+                graph, pacman, food)
+        else:
+            path, explore, c = self.astar_search(graph, pacman, food)
+
+        # print("path: ", path)
+        # print("explore: ", explore)
+
+        if c:
+            print("Time to finished: ", len(path))
+            print("The length of the discovered paths: ", len(explore))
+            print("Point: ", 20 - len(path))
+            move = []
+            for i in range(len(path)):
+                move.append(self.action_level2[path[i]])
+                i += 1
+            check = True
+            self.draw_map()
+            pygame.display.update()
+            while check:
+                for i in range(len(move)):
+                    if i != 0:
+                        clock.tick(5)
+                        re = move[i - 1]
+                        pos = move[i]
+                        self.map[re[0]][re[1]] = 0
+                        self.map[pos[0]][pos[1]] = 4
+                        self.draw_map()
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                pygame.quit()
+                                exit()
+                        pygame.display.update()
+                check = False
+
+            clock.tick(5)
+            self.draw_map()
+            pygame.display.update()
+        else:
+            print("Can not find food")
+            print("Point: 0")
+            self.draw_map()
+            pygame.display.update()
+
     def run_level4(self):
-        #cost_path = [[100 for _ in range(self.row)]for _ in range(self.collum)]
+        cost_path = [[100 for _ in range(self.col)]for _ in range(self.row)]
         check_stop = True
-        x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
-        y = (HEIGHT - (self.row + 2) * 30) / 2 + 30
         turn = True
         while check_stop:
+            clock.tick(10)
             if turn:
-                food, monster = self.detect_food_monster()
-                position = []
-                self.MAX_VALUE(self.pacman, food, monster,
-                               0, position, -999999)
                 self.map[self.pacman[0]][self.pacman[1]] = 0
-                self.pacman = position
+                self.pacman = self.choose_path(cost_path)
                 self.map[self.pacman[0]][self.pacman[1]] = 4
                 for i, a in enumerate(self.food):
                     if a[0] == self.pacman[0] and a[1] == self.pacman[1]:
@@ -166,7 +529,10 @@ class Maze():
                         break
                 turn = False
             else:
+                print("MONSTER")
                 action = self.MONSTER_ACTION(self.pacman, self.monster)
+                #print("action: ", end="")
+                # print(action)
                 for i in self.monster:
                     self.map[i[0]][i[1]] = 0
                 for i in self.food:
@@ -175,26 +541,23 @@ class Maze():
                 for i in self.monster:
                     self.map[i[0]][i[1]] = 3
                 turn = True
-            self.draw_map()
             if self.check_stop():
                 check_stop = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+            self.draw_map()
             pygame.display.update()
-
-    def movement(self):
-        x = (WEIGHT - (self.col + 2) * 30) / 2 + 30
-        y = (HEIGHT - (self.row + 2) * 30) / 2 + 30
-        for i in self.food:
-            self.screen.blit(image_food, (x + 30 * b[1], y + 30 * b[0]))
-        for i in self.monster:
-            self.screen.blit(image_monster, (x + 30 * b[1], y + 30 * b[0]))
-        self.screen.blit(
-            image_pacman, (x + 30 * self.pacman[1], y + 30 * self.pacman[0]))
 
     def check_stop(self):
         # check when all of food is eaten or monster collides with pacman
         # when monster collides with pacman, the position of bacman should be changed into (-1,-1)
-        if len(self.food) == 0 or (self.pacman[0] == -1 and self.pacman[1] == -1):
+        if len(self.food) == 0:
             return True
+        for i in self.monster:
+            if i[0] == self.pacman[0] and i[1] == self.pacman[1]:
+                return True
         return False
  # min max algorithm
 
@@ -209,60 +572,108 @@ class Maze():
                 food.append(i)
         return food, monster
 
-    def MAX_VALUE(self, state, food, monster, step, position, a):
-        check = self.TERMINAL_TEST(state, food, monster)
-        if check:
-            if check == 1:
-                return self.point - step + 20
-            if check == -1:
-                return self.point - step - 2**(20 - step)
+    def choose_path(self,cost_path):
+        food, monster = self.detect_food_monster()
+        temp_act = self.ACTION(self.pacman, 4)
         v = -999999
-        temp_act = self.ACTION(state, 4)
+        a = -999999
+        point_path=[]
         for i in temp_act:
-            temp_value = self.map[i[0]][i[1]]
-            self.map[i[0]][i[1]] = 4
-            temp = self.MIN_VALUE(i, food, monster, step + 1, position, a)
-            self.map[i[0]][i[1]] = temp_value
-            if temp > v:
-                v = temp
-                position = i
-            a = max(a, v)
-        return v
+            point_path.append(self.MIN_VALUE(self.pacman,i, food, monster, 1, a))
+        max_value=max(point_path)
+        print("looo")
+        print(len(point_path))
+        print(point_path)
+        print(temp_act)
+        position=[]
+        for a,b in zip(point_path,temp_act):
+            if a == max_value:
+                position.append(b)
+        print(position)
+        if len(position) > 1:
+            temp_cost=[cost_path[i[0]][i[1]] for i in position]
+            max_value=max(temp_cost)
+            temp_array=[]
+            print(temp_cost)
+            for a,b in zip(temp_cost,position):
+                if a == max_value:
+                    temp_array.append(b)
+            if len(temp_array) > 1:
+                temp=numpy.random.randint(0,len(temp_array)-1)
+                cost_path[temp_array[temp][0]][temp_array[temp][1]]-=1
+                position=temp_array[temp]
+            else:
+                cost_path[temp_array[0][0]][temp_array[0][1]]-=1
+                position = temp_array[0]
+        else:
+            position=position[0]
+        return position
 
-    def MIN_VALUE(self, state, food, monster, step, position, a):
+    def MAX_VALUE(self,parent,state, food, monster, step, a):
         check = self.TERMINAL_TEST(state, food, monster)
         if check:
             if check == 1:
-                temp_monster = self.monster.copy()
-                self.monster = self.MONSTER_ACTION(state)
-                check = self.TERMINAL_TEST(state)
-                self.monster = temp_monster
+                temp_monster = monster.copy()
+                monster = self.MONSTER_ACTION(state, monster)
+                check = self.TERMINAL_TEST(state, food, monster)
+                monster = temp_monster
                 if check == -1:
                     return self.point - step + 20 - 2**(20 - step)
                 else:
                     return self.point - step + 20
             if check == -1:
+                #if abs(state[0]-self.pacman[0]) + abs(state[1]-self.pacman[1])
+                return self.point - step - 2**(20 - step)
+        v = -999999
+        temp_act = self.ACTION(state, 4,parent)
+        #print(str(state)+" - "+str(temp_act))
+        for i in temp_act:
+            temp_value = self.map[i[0]][i[1]]
+            self.map[i[0]][i[1]] = 4
+            temp = self.MIN_VALUE(state,i, food, monster, step + 1, a)
+            self.map[i[0]][i[1]] = temp_value
+            if temp > v:
+                v = temp
+
+            a = max(a, v)
+        return v
+
+    def MIN_VALUE(self,parent,state, food, monster, step, a):
+        check = self.TERMINAL_TEST(state, food, monster)
+        if check:
+            if check == 1:
+                temp_monster = monster.copy()
+                monster = self.MONSTER_ACTION(state, monster)
+                check = self.TERMINAL_TEST(state, food, monster)
+                monster = temp_monster
+                if check == -1:
+                    return self.point - step + 20 - 2**(20 - step)
+                else:
+                    return self.point - step + 20
+            if check == -1:
+                #if abs(state[0]-self.pacman[0]) + abs(state[1]-self.pacman[1])
                 return self.point - step - 2**(20 - step)
         if (self.point - step) < a:
             return self.point - step
         if step == 3:
             return self.point - step
         temp_monster = monster.copy()
-        self.monster = self.MONSTER_ACTION(state, monster)
-        v = self.MAX_VALUE(state, food, monster, step, position, a)
+        monster = self.MONSTER_ACTION(state, monster)
+        #print("monster: "+str(monster))
+        v = self.MAX_VALUE(parent,state, food, monster, step, a)
         monster = temp_monster
         return v
 
-    def ACTION(self, state, value):
+    def ACTION(self, state, value,parent=[-1,-1]):
         # value to differentiate whether monster or pacman
         temp_act = []
-        if state[0] - 1 > 0 and self.map[state[0] - 1][state[1]] != 1 and self.map[state[0] - 1][state[1]] != value:
+        if state[0] - 1 >= 0 and self.map[state[0] - 1][state[1]] != 1 and self.map[state[0] - 1][state[1]] != value and ((state[0] - 1)!=parent[0] or state[1]!=parent[1]):
             temp_act.append([state[0] - 1, state[1]])
-        if state[0] + 1 < self.row and self.map[state[0] + 1][state[1]] != 1 and self.map[state[0] + 1][state[1]] != value:
+        if state[0] + 1 < self.row and self.map[state[0] + 1][state[1]] != 1 and self.map[state[0] + 1][state[1]] != value and ((state[0] + 1)!=parent[0] or state[1]!=parent[1]):
             temp_act.append([state[0] + 1, state[1]])
-        if state[1] - 1 > 0 and self.map[state[0]][state[1] - 1] != 1 and self.map[state[0]][state[1] - 1] != value:
+        if state[1] - 1 >= 0 and self.map[state[0]][state[1] - 1] != 1 and self.map[state[0]][state[1] - 1] != value and (state[0] !=parent[0] or state[1]-1!=parent[1]):
             temp_act.append([state[0], state[1] - 1])
-        if state[1] + 1 < self.col and self.map[state[0]][state[1] + 1] != 1 and self.map[state[0]][state[1] + 1] != value:
+        if state[1] + 1 < self.col and self.map[state[0]][state[1] + 1] != 1 and self.map[state[0]][state[1] + 1] != value and (state[0]!=parent[0] or state[1]+1!=parent[1]):
             temp_act.append([state[0], state[1] + 1])
         return temp_act
 
@@ -278,7 +689,10 @@ class Maze():
     def MONSTER_ACTION(self, state, monster):
         action = []
         for i in monster:
-            action.append(self.BFS(i, state))
+            temp = self.BFS(i, state)
+            action.append(temp)
+            #print("action i: ", end="")
+            # print(temp)
         return action
 
     def BFS(self, monster, goal):
@@ -289,19 +703,27 @@ class Maze():
         self.frontier.append(monster)
         frontier_parent.append(-1)
         while check_stop:
+            if len(self.frontier) == 0:
+                return_value.append(monster)
+                return_value.append(monster)
+                break
             self.expanded.append(self.frontier[0])
             self.frontier = self.frontier[1:]
             expanded_parent.append(frontier_parent[0])
             frontier_parent = frontier_parent[1:]
             adjacency_node = self.ACTION(
                 self.expanded[len(self.expanded) - 1], 1)
+            #print("ajd: "+str(adjacency_node))
             for i in adjacency_node:
                 if not i in self.expanded:
                     if i[0] == goal[0] and i[1] == goal[1]:
+                        expanded_parent.append(len(self.expanded) - 1)
+                        self.expanded.append(i)
                         parent_pos = len(self.expanded) - 1
                         while parent_pos != -1:
                             return_value.append(self.expanded[parent_pos])
                             parent_pos = expanded_parent[parent_pos]
+                        return_value = return_value[::-1]
                         check_stop = False
                     else:
                         if not i in self.frontier:
