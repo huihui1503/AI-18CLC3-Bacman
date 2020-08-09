@@ -581,10 +581,6 @@ class Maze():
         for i in temp_act:
             point_path.append(self.MIN_VALUE(self.pacman,i, food, monster, 1, a))
         max_value=max(point_path)
-        print("looo")
-        print(len(point_path))
-        print(point_path)
-        print(temp_act)
         position=[]
         for a,b in zip(point_path,temp_act):
             if a == max_value:
@@ -594,7 +590,6 @@ class Maze():
             temp_cost=[cost_path[i[0]][i[1]] for i in position]
             max_value=max(temp_cost)
             temp_array=[]
-            print(temp_cost)
             for a,b in zip(temp_cost,position):
                 if a == max_value:
                     temp_array.append(b)
@@ -732,3 +727,220 @@ class Maze():
         self.expanded.clear()
         self.frontier.clear()
         return return_value[1]
+    def  run_level1(self):
+        print("1. Breath - First Search")
+        print("2. Uniform Cost Search")
+        print("3. A* ")
+        print("4. Greedy Breath First Seach")
+        choice=input("Choose Algorithm: ")
+        if int(choice) == 1:
+            self.BFS_ship(self.pacman,self.food[0])
+        elif int(choice) == 2:
+            self.UCS_ship(self.pacman,self.food[0])
+        elif int(choice) == 3:
+            pass
+        elif int(choice) == 4 :
+            pass
+    
+    def BFS_ship(self,ship,food):
+        #assum that ship = [x,y]
+        food_found = False
+        list_child = list()# [father,child] with father = [x,y], child = [x,y]
+        founded_path = list()
+        frontier = list()
+        explore = list()
+        list_child = list()
+        init_node = ship
+        frontier.append(ship)
+        if (ship[0]==food[0] and ship[1]==food[1]):
+            return
+        while food_found==False:
+            if not frontier:
+                print("Food not found")
+                return
+            temp_list = list()
+            pop_node = frontier.pop(0)
+            explore.append(pop_node)
+            #finding surround templist = [child1, child2,child3,child4] with child = [x,y]
+            if (pop_node[1]-1>=0 and pop_node[1]-1<self.col):#up
+                if self.map[pop_node[0]][pop_node[1]-1]!=1:
+                    cur_node = [pop_node[0],pop_node[1]-1]
+                    temp_list.append(cur_node)
+            if (pop_node[0]+1>=0 and pop_node[0]+1<self.row):   #right     
+                if self.map[pop_node[0]+1][pop_node[1]]!=1:
+                    cur_node = [pop_node[0]+1,pop_node[1]]
+                    temp_list.append(cur_node)
+            if (pop_node[1]+1>=0 and pop_node[1]+1<self.col):#down
+                if self.map[pop_node[0]][pop_node[1]+1]!=1:
+                    cur_node = [pop_node[0],pop_node[1]+1]
+                    temp_list.append(cur_node)
+            if (pop_node[0]-1>=0 and pop_node[0]-1<self.row):#left
+                if self.map[pop_node[0]-1][pop_node[1]]!=1:
+                    cur_node = [pop_node[0]-1,pop_node[1]]
+                    temp_list.append(cur_node) 
+            for i in temp_list:
+                flag_frontier = False
+                flag_explore = False
+                if i[0]==food[0] and i[1]==food[1]:
+                    list_child.append([pop_node,i])
+                    food_found = True
+                    break
+                for j in frontier:
+                    if i[0]==j[0] and j[1]==i[1]:
+                        flag_frontier=True
+                for z in explore:
+                    if i[0] == z[0] and i[1]==z[1]:
+                        flag_explore=True
+                if flag_explore==False and flag_frontier == False:
+                    frontier.append(i)     
+                    list_child.append([pop_node,i])
+    #finding path
+        founded_path.append(food)
+        cur = food
+        while True:
+            for i in list_child:
+                if i[1][0] == cur[0] and i[1][1]==cur[1]:
+                    cur = i[0]
+                    founded_path.append(cur)
+            if cur[0]==ship[0] and cur[1]==ship[1]:
+                break
+        founded_path.reverse()
+    #VE= 
+        if True == True:
+            print("Time to finished: ", len(founded_path))
+            print("The length of the discovered paths: ", len(explore))
+            print("Point: ", 20 - len(founded_path))
+            check = False
+            self.draw_map()
+            pygame.display.update()
+            pos = 0
+            cur = founded_path[pos]
+            while check == False:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                if cur[0]==food[0] and cur[1]==food[1]:
+                    check = True
+                clock.tick(5)
+                re = cur
+                pos+=1
+                if pos == len(founded_path):
+                    break
+                cur = founded_path[pos]
+                self.map[re[0]][re[1]] = 0
+                self.map[cur[0]][cur[1]] = 4
+                clock.tick(5)
+                self.draw_map()
+                pygame.display.update()
+        else:
+            print("Can not find food")
+            print("Point: 0")
+            self.draw_map()
+            pygame.display.update()
+    def UCS_ship(self,ship,food):
+        #assum that ship = [x,y]
+        food_found = False
+        list_child = list()# [father,child] with father = [x,y], child = [x,y]
+        founded_path = list()
+        frontier = list()# frontier = [*[[x,y],1]*,*[[x,y],2]*]
+        explore = list()
+        list_child = list()
+        init_node = [ship,0] #init_node = [ship= [x,y],cost= int]
+        frontier.append(init_node)
+        if (ship[0]==food[0] and ship[1]==food[1]):
+            return
+        while food_found==False:
+            if not frontier:
+                print("Food not found")
+                return
+            temp_list = list()
+            #sort UCS
+            pop_node = frontier.pop(0)#[[x,y],cost]
+            explore.append(pop_node)
+            #finding surround templist = [child1, child2,child3,child4] with child = [x,y]
+            if (pop_node[0][1]-1>=0 and pop_node[0][1]-1<self.col):#up
+                if self.map[pop_node[0][0]][pop_node[0][1]-1]!=1:
+                    cur_node = [[pop_node[0][0],pop_node[0][1]-1],pop_node[1]+1]
+                    temp_list.append(cur_node)
+            if (pop_node[0][0]+1>=0 and pop_node[0][0]+1<self.row):   #right     
+                if self.map[pop_node[0][0]+1][pop_node[0][1]]!=1:
+                    cur_node = [[pop_node[0][0]+1,pop_node[0][1]],pop_node[1]+1]
+                    temp_list.append(cur_node)
+            if (pop_node[0][1]+1>=0 and pop_node[0][1]+1<self.col):#down
+                if self.map[pop_node[0][0]][pop_node[0][1]+1]!=1:
+                    cur_node = [[pop_node[0][0],pop_node[0][1]+1],pop_node[1]+1]
+                    temp_list.append(cur_node)
+            if (pop_node[0][0]-1>=0 and pop_node[0][0]-1<self.row):#left
+                if self.map[pop_node[0][0]-1][pop_node[0][1]]!=1:
+                    cur_node = [[pop_node[0][0]-1,pop_node[0][1]],pop_node[1]+1]
+                    temp_list.append(cur_node) 
+            for i in temp_list:#temp_list = [[node,cost],[node],cost]
+                flag_frontier = False
+                flag_explore = False
+                check = i
+                if i[0][0]==food[0] and i[0][1]==food[1]:
+                    list_child.append([pop_node[0],i[0]])
+                    food_found = True
+                    break
+                for j in frontier:
+                    if i[0][0]==j[0][0] and j[0][1]==i[0][1]:
+                        if check[1] < j[1]:
+                            for find in frontier:
+                                if check[0][0] == find[0][0] and check[0][1]== find[0][1]:
+                                    frontier.pop(find)
+                                    frontier.append(check)
+                                    for x in list_child:
+                                        if j[0]==x[0]:
+                                            list_child.pop(x)
+                                            list_child.append(pop_node[0],check[0])
+                                            break
+                        flag_frontier=True
+                for z in explore:
+                    if i[0][0] == z[0][0] and i[0][1]==z[0][1]:
+                        flag_explore=True
+                if flag_explore==False and flag_frontier == False:
+                    frontier.append(i)    
+                    list_child.append([pop_node[0],i[0]])
+    #finding path
+        founded_path.append(food)
+        cur = food
+        while True:
+            for i in list_child:
+                if i[1][0] == cur[0] and i[1][1]==cur[1]:
+                    cur = i[0]
+                    founded_path.append(cur)
+            if cur[0]==ship[0] and cur[1]==ship[1]:
+                break
+        founded_path.reverse()
+    #VE= 
+        if True == True:
+            print("Time to finished: ", len(founded_path))
+            print("The length of the discovered paths: ", len(explore))
+            print("Point: ", 20 - len(founded_path))
+            check = False
+            self.draw_map()
+            pygame.display.update()
+            pos = 0
+            cur = founded_path[pos]
+            while check == False:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                if cur[0]==food[0] and cur[1]==food[1]:
+                    check = True
+                clock.tick(5)
+                re = cur
+                pos+=1
+                if pos == len(founded_path):
+                    break
+                cur = founded_path[pos]
+                self.map[re[0]][re[1]] = 0
+                self.map[cur[0]][cur[1]] = 4
+                clock.tick(5)
+                self.draw_map()
+                pygame.display.update()
+        else:
+            print("Can not find food")
+            print("Point: 0")
+            self.draw_map()
+            pygame.display.update()

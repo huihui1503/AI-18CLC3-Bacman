@@ -23,7 +23,8 @@ while running:
             level_running = True
             running = False
     if level == 1:
-        pass
+        main.run_level1()
+        level_running = False
     if level == 2:
         main.run_level2()
         level_running = False
