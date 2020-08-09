@@ -19,7 +19,8 @@ while running:
             main.add_level(level, maze_map)
             main.read_data("map" + str(maze_map) + ".txt")
     if level == 1:
-        pass
+        main.run_level1()
+        break
     if level == 2:
         main.run_level2()
     if level == 3:
