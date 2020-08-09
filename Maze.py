@@ -478,9 +478,7 @@ class Maze():
         # print("explore: ", explore)
 
         if c:
-            print("Time to finished: ", len(path))
-            print("The length of the discovered paths: ", len(explore))
-            print("Point: ", 20 - len(path))
+            start = time.time()
             move = []
             for i in range(len(path)):
                 move.append(self.action_level2[path[i]])
@@ -491,7 +489,7 @@ class Maze():
             while check:
                 for i in range(len(move)):
                     if i != 0:
-                        clock.tick(5)
+                        #clock.tick(5)
                         re = move[i - 1]
                         pos = move[i]
                         self.map[re[0]][re[1]] = 0
@@ -502,9 +500,13 @@ class Maze():
                                 pygame.quit()
                                 exit()
                         pygame.display.update()
+                end = time.time()
+                print("Time to finished: ", end - start)
+                print("The length of the discovered paths: ", len(path))
+                print("Point: ", 20 - len(path))
                 check = False
 
-            clock.tick(5)
+            #clock.tick(5)
             self.draw_map()
             pygame.display.update()
         else:
