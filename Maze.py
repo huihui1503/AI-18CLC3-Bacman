@@ -2,7 +2,7 @@ import os
 import pygame
 import numpy
 import time
-
+import random
 clock = pygame.time.Clock()
 filename = os.getcwd()
 wall = pygame.image.load(filename + "/PICTURE/wall.png")
@@ -514,7 +514,113 @@ class Maze():
             print("Point: 0")
             self.draw_map()
             pygame.display.update()
+#------------------------------------------ LV3
+    def monster_move_random(self, current, initial):
+       rowc = current[0]
+       rowi = initial[0]
+       colc = current[1]
+       coli = initial[1]
+       move = []
 
+       if colc == coli - 1:
+           if rowc == rowi + 1:
+               move.append( [rowc - 1, colc] ) #up
+           elif rowc == rowi - 1:
+               move.append ( [rowc + 1, colc] ) #down
+           else:
+               move.append( [rowc - 1, colc] )
+               move.append ( [rowc + 1, colc] )
+           move.append( [rowc, colc + 1] )
+       elif colc == coli + 1:
+           if rowc == rowi + 1:
+               move.append( [rowc - 1, colc] ) #up
+           elif rowc == rowi - 1:
+               move.append ( [rowc + 1, colc] ) #down
+           else:
+               move.append( [rowc - 1, colc] ) #left
+               move.append ( [rowc + 1, colc] ) #right
+           move.append( [rowc, colc - 1] )
+       else:
+           if rowc == rowi + 1:
+               move.append( [rowc - 1, colc] ) #up
+           elif rowc == rowi - 1:
+               move.append ( [rowc + 1, colc] ) #down
+           else:
+               move.append( [rowc - 1, colc] )
+               move.append ( [rowc + 1, colc] )
+           move.append( [rowc, colc - 1] ) #left
+           move.append( [rowc, colc + 1] ) #right
+           
+       move_real = []
+       for i in range(len(move)):
+           if move[i][0] >= 0 and move[i][0] <= self.row - 1 and move[i][1] >= 0 and move[i][1] <= self.col - 1 and self.map[move[i][0]][move[i][1]] != 1:
+               move_real.append( [move[i][0], move[i][1]] )
+       return move_real[random.randint(0, len(move_real)- 1)]
+   
+    def choose_path_lv3(self,cost_path):
+        temp_act = self.ACTION(self.pacman, 4)
+        point_path=[]
+        for i in temp_act:
+            point_path.append(cost_path[i[0]][i[1]])
+        max_value=max(point_path)
+        position=[]
+        for a,b in zip(point_path,temp_act):
+            if a == max_value:
+                position.append(b)
+
+        if len(position) > 1:
+            temp=numpy.random.randint(0,len(position)-1)
+            cost_path[position[temp][0]][position[temp][1]]-=1
+            position= position[temp]
+        else:
+            cost_path[position[0][0]][position[0][1]]-=1
+            position = position[0]
+      
+        return position
+    
+    def run_level3(self):
+        initial_monster = self.monster.copy()
+        cost_path = [[10 for _ in range(self.col)]for _ in range(self.row)]
+        save = []
+        check_stop = True
+        turn = True
+        for i in self.monster:
+            save.append( [i[0], i[1], 0] )
+        while check_stop:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    break
+            if turn == True:
+                    self.map[self.pacman[0]][self.pacman[1]] = 0
+                    foods, monsters = self.detect_food_monster()
+                    if len(foods) >= 1:
+                        self.pacman = self.BFS(self.pacman, foods[0])
+                    else:
+                        self.pacman = self.choose_path_lv3(cost_path)
+                    self.map[self.pacman[0]][self.pacman[1]] = 4
+                    for i, a in enumerate(self.food):
+                        if a[0] == self.pacman[0] and a[1] == self.pacman[1]:
+                            self.food.pop(i)
+                            break
+                    turn = False
+            else:
+                for i in range(len(self.monster)):
+                    refill = save.pop(0)
+                    self.map[refill[0]][refill[1]] = refill[2]
+                    new_pos = self.monster_move_random(self.monster[i], initial_monster[i])
+                    if self.map[new_pos[0]][new_pos[1]] == 2:
+                        save.append( [new_pos[0], new_pos[1], 2] )
+                    elif self.map[new_pos[0]][new_pos[1]] == 0:
+                        save.append( [new_pos[0], new_pos[1], 0] )
+                    self.monster[i] = new_pos.copy()
+                    self.map[new_pos[0]][new_pos[1]] = 3
+                    turn= True
+            if self.check_stop():
+                check_stop = False    
+            clock.tick(5)
+            self.draw_map()
+            pygame.display.update()   
+#-----------------------------------------------------------
     def run_level4(self):
         cost_path = [[100 for _ in range(self.col)]for _ in range(self.row)]
         check_stop = True

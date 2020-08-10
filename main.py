@@ -29,7 +29,7 @@ while running:
         main.run_level2()
         level_running = False
     if level == 3:
-        main.test()
+        main.run_level3()
         level_running = False
     if level == 4:
         main.run_level4()
