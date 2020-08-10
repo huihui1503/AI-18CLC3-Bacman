@@ -843,6 +843,7 @@ class Maze():
         choice=input("Choose Algorithm: ")
         if int(choice) == 1:
             self.BFS_ship(self.pacman,self.food[0])
+            #self.BFS_ship(self.pacman,self.food[0])
         elif int(choice) == 2:
             self.UCS_ship(self.pacman,self.food[0])
         elif int(choice) == 3:
@@ -915,9 +916,7 @@ class Maze():
         founded_path.reverse()
     #VE= 
         if True == True:
-            print("Time to finished: ", len(founded_path))
-            print("The length of the discovered paths: ", len(explore))
-            print("Point: ", 20 - len(founded_path))
+            start = time.time()
             check = False
             self.draw_map()
             pygame.display.update()
@@ -940,6 +939,10 @@ class Maze():
                 clock.tick(5)
                 self.draw_map()
                 pygame.display.update()
+            end = time.time()
+            print("Time to finished: ", end-start)
+            print("The length of the discovered paths: ", len(founded_path))
+            print("Point: ", 20 - len(founded_path))
         else:
             print("Can not find food")
             print("Point: 0")
@@ -1025,11 +1028,9 @@ class Maze():
             if cur[0]==ship[0] and cur[1]==ship[1]:
                 break
         founded_path.reverse()
-    #VE= 
+     #VE= 
         if True == True:
-            print("Time to finished: ", len(founded_path))
-            print("The length of the discovered paths: ", len(explore))
-            print("Point: ", 20 - len(founded_path))
+            start = time.time()
             check = False
             self.draw_map()
             pygame.display.update()
@@ -1052,6 +1053,10 @@ class Maze():
                 clock.tick(5)
                 self.draw_map()
                 pygame.display.update()
+            end = time.time()
+            print("Time to finished: ", end-start)
+            print("The length of the discovered paths: ", len(founded_path))
+            print("Point: ", 20 - len(founded_path))
         else:
             print("Can not find food")
             print("Point: 0")
@@ -1150,11 +1155,9 @@ class Maze():
             if cur[0]==ship[0] and cur[1]==ship[1]:
                 break
         founded_path.reverse()
-    #VE
+    #VE= 
         if True == True:
-            print("Time to finished: ", len(founded_path))
-            print("The length of the discovered paths: ", len(explore))
-            print("Point: ", 20 - len(founded_path))
+            start = time.time()
             check = False
             self.draw_map()
             pygame.display.update()
@@ -1177,6 +1180,10 @@ class Maze():
                 clock.tick(5)
                 self.draw_map()
                 pygame.display.update()
+            end = time.time()
+            print("Time to finished: ", end-start)
+            print("The length of the discovered paths: ", len(founded_path))
+            print("Point: ", 20 - len(founded_path))
         else:
             print("Can not find food")
             print("Point: 0")
@@ -1276,11 +1283,9 @@ class Maze():
             if cur[0]==ship[0] and cur[1]==ship[1]:
                 break
         founded_path.reverse()
-    #VE
+     #VE= 
         if True == True:
-            print("Time to finished: ", len(founded_path))
-            print("The length of the discovered paths: ", len(explore))
-            print("Point: ", 20 - len(founded_path))
+            start = time.time()
             check = False
             self.draw_map()
             pygame.display.update()
@@ -1303,6 +1308,10 @@ class Maze():
                 clock.tick(5)
                 self.draw_map()
                 pygame.display.update()
+            end = time.time()
+            print("Time to finished: ", end-start)
+            print("The length of the discovered paths: ", len(founded_path))
+            print("Point: ", 20 - len(founded_path))
         else:
             print("Can not find food")
             print("Point: 0")
