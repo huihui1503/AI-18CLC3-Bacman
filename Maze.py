@@ -468,7 +468,7 @@ class Maze():
             path, explore, c = self.breadth_first_search(graph, pacman, food)
         elif al == 2:
             path, explore, c = self.uniform_cost_search(graph, pacman, food)
-        elif al == 2:
+        elif al == 3:
             path, explore, c = self.greedy_best_first_search(
                 graph, pacman, food)
         else:
@@ -628,13 +628,13 @@ class Maze():
                move.append ( [rowc + 1, colc] )
            move.append( [rowc, colc - 1] ) #left
            move.append( [rowc, colc + 1] ) #right
-           
+
        move_real = []
        for i in range(len(move)):
-           if move[i][0] >= 0 and move[i][0] <= self.row - 1 and move[i][1] >= 0 and move[i][1] <= self.col - 1 and self.map[move[i][0]][move[i][1]] != 1:
+           if move[i][0] >= 0 and move[i][0] <= self.row - 1 and move[i][1] >= 0 and move[i][1] <= self.col - 1 and self.map[move[i][0]][move[i][1]] != 1 and self.map[move[i][0]][move[i][1]] != 3:
                move_real.append( [move[i][0], move[i][1]] )
        return move_real[random.randint(0, len(move_real)- 1)]
-   
+
     def choose_path_lv3(self,cost_path):
         temp_act = self.ACTION(self.pacman, 4)
         point_path=[]
@@ -653,6 +653,7 @@ class Maze():
         else:
             cost_path[position[0][0]][position[0][1]]-=1
             position = position[0]
+
         
         return position
     
@@ -671,7 +672,8 @@ class Maze():
                 self.BFS_lv3(path, food_detect[0]) #set up new path if goal now != goal previous
             elif type_search == 2:
                 self.Greedy_lv3(path, food_detect[0]) #set up new path if goal now != goal previous
-            
+
+
     def run_level3(self):
         initial_monster = self.monster.copy()
         cost_path = [[100 for _ in range(self.col)]for _ in range(self.row)]
@@ -718,10 +720,9 @@ class Maze():
                     self.map[new_pos[0]][new_pos[1]] = 3
                     turn= True
             if self.check_stop():
-                check_stop = False    
-            clock.tick(5)
+                check_stop = False
             self.draw_map()
-            pygame.display.update()   
+            pygame.display.update()
 #-----------------------------------------------------------
     def run_level4(self):
         cost_path = [[100 for _ in range(self.col)]for _ in range(self.row)]
@@ -739,7 +740,7 @@ class Maze():
                         break
                 turn = False
             else:
-                print("MONSTER")
+                #print("MONSTER")
                 action = self.MONSTER_ACTION(self.pacman, self.monster)
                 #print("action: ", end="")
                 # print(action)
@@ -795,7 +796,7 @@ class Maze():
         for a,b in zip(point_path,temp_act):
             if a == max_value:
                 position.append(b)
-        print(position)
+        #print(position)
         if len(position) > 1:
             temp_cost=[cost_path[i[0]][i[1]] for i in position]
             max_value=max(temp_cost)
@@ -894,13 +895,13 @@ class Maze():
     def MONSTER_ACTION(self, state, monster):
         action = []
         for i in monster:
-            temp = self.BFS(i, state)
+            temp = self.BFS(i, state,action)
             action.append(temp)
             #print("action i: ", end="")
             # print(temp)
         return action
 
-    def BFS(self, monster, goal):
+    def BFS(self, monster, goal,action=[]):
         return_value = []
         check_stop = True
         frontier_parent = []
@@ -917,7 +918,14 @@ class Maze():
             expanded_parent.append(frontier_parent[0])
             frontier_parent = frontier_parent[1:]
             adjacency_node = self.ACTION(
-                self.expanded[len(self.expanded) - 1], 1)
+                self.expanded[len(self.expanded) - 1], 3)
+            i=0
+            for a in adjacency_node:
+                for b in action:
+                    if b[0]==a[0] and b[1]==a[1]:
+                        adjacency_node.pop(i)
+                        i-=1
+                i+=1
             #print("ajd: "+str(adjacency_node))
             for i in adjacency_node:
                 if not i in self.expanded:
@@ -952,7 +960,7 @@ class Maze():
             self.A_star_ship(self.pacman,self.food[0])
         elif int(choice) == 4 :
             self.greedy_BFS_ship(self.pacman,self.food[0])
-    
+
     def BFS_ship(self,ship,food):
         #assum that ship = [x,y]
         food_found = False
@@ -977,7 +985,7 @@ class Maze():
                 if self.map[pop_node[0]][pop_node[1]-1]!=1:
                     cur_node = [pop_node[0],pop_node[1]-1]
                     temp_list.append(cur_node)
-            if (pop_node[0]+1>=0 and pop_node[0]+1<self.row):   #right     
+            if (pop_node[0]+1>=0 and pop_node[0]+1<self.row):   #right
                 if self.map[pop_node[0]+1][pop_node[1]]!=1:
                     cur_node = [pop_node[0]+1,pop_node[1]]
                     temp_list.append(cur_node)
@@ -988,7 +996,7 @@ class Maze():
             if (pop_node[0]-1>=0 and pop_node[0]-1<self.row):#left
                 if self.map[pop_node[0]-1][pop_node[1]]!=1:
                     cur_node = [pop_node[0]-1,pop_node[1]]
-                    temp_list.append(cur_node) 
+                    temp_list.append(cur_node)
             for i in temp_list:
                 flag_frontier = False
                 flag_explore = False
@@ -1003,7 +1011,7 @@ class Maze():
                     if i[0] == z[0] and i[1]==z[1]:
                         flag_explore=True
                 if flag_explore==False and flag_frontier == False:
-                    frontier.append(i)     
+                    frontier.append(i)
                     list_child.append([pop_node,i])
     #finding path
         founded_path.append(food)
@@ -1016,7 +1024,7 @@ class Maze():
             if cur[0]==ship[0] and cur[1]==ship[1]:
                 break
         founded_path.reverse()
-    #VE= 
+    #VE=
         if True == True:
             start = time.time()
             check = False
@@ -1030,14 +1038,14 @@ class Maze():
                         running = False
                 if cur[0]==food[0] and cur[1]==food[1]:
                     check = True
-                clock.tick(5)
+                #clock.tick(5)
                 re = cur
                 pos+=1
                 if pos == len(founded_path):
                     break
                 cur = founded_path[pos]
                 self.map[re[0]][re[1]] = 0
-                self.map[cur[0]][cur[1]] = 4
+                #self.map[cur[0]][cur[1]] = 4
                 clock.tick(5)
                 self.draw_map()
                 pygame.display.update()
@@ -1068,11 +1076,11 @@ class Maze():
                 return
             temp_list = list()
             #sort UCS
-            n = len(frontier) 
-            for i in range(n):  
-                for j in range(0, n-i-1): 
-                    if frontier[j][1] > frontier[j+1][1] : 
-                        frontier[j], frontier[j+1] = frontier[j+1], frontier[j] 
+            n = len(frontier)
+            for i in range(n):
+                for j in range(0, n-i-1):
+                    if frontier[j][1] > frontier[j+1][1] :
+                        frontier[j], frontier[j+1] = frontier[j+1], frontier[j]
             pop_node = frontier.pop(0)#[[x,y],cost]
             explore.append(pop_node)
             #finding surround templist = [child1, child2,child3,child4] with child = [x,y]
@@ -1080,7 +1088,7 @@ class Maze():
                 if self.map[pop_node[0][0]][pop_node[0][1]-1]!=1:
                     cur_node = [[pop_node[0][0],pop_node[0][1]-1],pop_node[1]+1]
                     temp_list.append(cur_node)
-            if (pop_node[0][0]+1>=0 and pop_node[0][0]+1<self.row):   #right     
+            if (pop_node[0][0]+1>=0 and pop_node[0][0]+1<self.row):   #right
                 if self.map[pop_node[0][0]+1][pop_node[0][1]]!=1:
                     cur_node = [[pop_node[0][0]+1,pop_node[0][1]],pop_node[1]+1]
                     temp_list.append(cur_node)
@@ -1091,7 +1099,7 @@ class Maze():
             if (pop_node[0][0]-1>=0 and pop_node[0][0]-1<self.row):#left
                 if self.map[pop_node[0][0]-1][pop_node[0][1]]!=1:
                     cur_node = [[pop_node[0][0]-1,pop_node[0][1]],pop_node[1]+1]
-                    temp_list.append(cur_node) 
+                    temp_list.append(cur_node)
             for i in temp_list:#temp_list = [[node,cost],[node],cost]
                 flag_frontier = False
                 flag_explore = False
@@ -1117,7 +1125,7 @@ class Maze():
                     if i[0][0] == z[0][0] and i[0][1]==z[0][1]:
                         flag_explore=True
                 if flag_explore==False and flag_frontier == False:
-                    frontier.append(i)    
+                    frontier.append(i)
                     list_child.append([pop_node[0],i[0]])
     #finding path
         founded_path.append(food)
@@ -1130,7 +1138,7 @@ class Maze():
             if cur[0]==ship[0] and cur[1]==ship[1]:
                 break
         founded_path.reverse()
-     #VE= 
+     #VE=
         if True == True:
             start = time.time()
             check = False
@@ -1182,11 +1190,11 @@ class Maze():
                 return
             temp_list = list()
             #sort UCS
-            n = len(frontier) 
-            for i in range(n):  
-                for j in range(0, n-i-1): 
-                    if frontier[j][1] > frontier[j+1][1] : 
-                         frontier[j], frontier[j+1] = frontier[j+1], frontier[j] 
+            n = len(frontier)
+            for i in range(n):
+                for j in range(0, n-i-1):
+                    if frontier[j][1] > frontier[j+1][1] :
+                         frontier[j], frontier[j+1] = frontier[j+1], frontier[j]
             pop_node = frontier.pop(0)#[[x,y],cost,h]
             if pop_node[0][0]==food[0] and pop_node[0][1]==food[1]:
                     food_found = True
@@ -1200,7 +1208,7 @@ class Maze():
                     h= pow(p1+p2,1.0/2)
                     cur_node = [[pop_node[0][0],pop_node[0][1]-1],h]
                     temp_list.append(cur_node)
-            if (pop_node[0][0]+1>=0 and pop_node[0][0]+1<self.row):   #right     
+            if (pop_node[0][0]+1>=0 and pop_node[0][0]+1<self.row):   #right
                 if self.map[pop_node[0][0]+1][pop_node[0][1]]!=1:
                     p1 = pow(food[0]-(pop_node[0][0]+1),2)
                     p2 = pow(food[1] - (pop_node[0][1]),2)
@@ -1220,7 +1228,7 @@ class Maze():
                     p2 = pow(food[1] - (pop_node[0][1]),2)
                     h= pow(p1+p2,1.0/2)
                     cur_node = [[pop_node[0][0]-1,pop_node[0][1]],h]
-                    temp_list.append(cur_node) 
+                    temp_list.append(cur_node)
             for i in temp_list:#temp_list = [[node,cost],[node],cost]
                 flag_frontier = False
                 flag_explore = False
@@ -1228,7 +1236,7 @@ class Maze():
                 for j in frontier:
                     if i[0][0]==j[0][0] and j[0][1]==i[0][1]:
                         if check[1] < j[1]:
-                            count = 0 
+                            count = 0
                             for find in frontier:
                                 if check[0][0] == find[0][0] and check[0][1]== find[0][1]:
                                     frontier.pop(count)
@@ -1244,7 +1252,7 @@ class Maze():
                     if i[0][0] == z[0][0] and i[0][1]==z[0][1]:
                         flag_explore=True
                 if flag_explore==False and flag_frontier == False:
-                    frontier.append(i)    
+                    frontier.append(i)
                     list_child.append([pop_node[0],i[0]])
     #finding path
         founded_path.append(food)
@@ -1257,7 +1265,7 @@ class Maze():
             if cur[0]==ship[0] and cur[1]==ship[1]:
                 break
         founded_path.reverse()
-    #VE= 
+    #VE=
         if True == True:
             start = time.time()
             check = False
@@ -1310,11 +1318,11 @@ class Maze():
                 return
             temp_list = list()
             #sort UCS
-            n = len(frontier) 
-            for i in range(n):  
-                for j in range(0, n-i-1): 
-                    if (frontier[j][1]+frontier[j][2]) > (frontier[j+1][1]+frontier[j+1][2]) : 
-                         frontier[j], frontier[j+1] = frontier[j+1], frontier[j] 
+            n = len(frontier)
+            for i in range(n):
+                for j in range(0, n-i-1):
+                    if (frontier[j][1]+frontier[j][2]) > (frontier[j+1][1]+frontier[j+1][2]) :
+                         frontier[j], frontier[j+1] = frontier[j+1], frontier[j]
             pop_node = frontier.pop(0)#[[x,y],cost,h]
             if pop_node[0][0]==food[0] and pop_node[0][1]==food[1]:
                     food_found = True
@@ -1328,7 +1336,7 @@ class Maze():
                     h= pow(p1+p2,1.0/2)
                     cur_node = [[pop_node[0][0],pop_node[0][1]-1],pop_node[1]+1,h]
                     temp_list.append(cur_node)
-            if (pop_node[0][0]+1>=0 and pop_node[0][0]+1<self.row):   #right     
+            if (pop_node[0][0]+1>=0 and pop_node[0][0]+1<self.row):   #right
                 if self.map[pop_node[0][0]+1][pop_node[0][1]]!=1:
                     p1 = pow(food[0]-(pop_node[0][0]+1),2)
                     p2 = pow(food[1] - (pop_node[0][1]),2)
@@ -1348,7 +1356,7 @@ class Maze():
                     p2 = pow(food[1] - (pop_node[0][1]),2)
                     h= pow(p1+p2,1.0/2)
                     cur_node = [[pop_node[0][0]-1,pop_node[0][1]],pop_node[1]+1,h]
-                    temp_list.append(cur_node) 
+                    temp_list.append(cur_node)
             for i in temp_list:#temp_list = [[node,cost],[node],cost]
                 flag_frontier = False
                 flag_explore = False
@@ -1356,7 +1364,7 @@ class Maze():
                 for j in frontier:
                     if i[0][0]==j[0][0] and j[0][1]==i[0][1]:
                         if check[1] < j[1]:
-                            count = 0 
+                            count = 0
                             for find in frontier:
                                 if check[0][0] == find[0][0] and check[0][1]== find[0][1]:
                                     frontier.pop(count)
@@ -1372,7 +1380,7 @@ class Maze():
                     if i[0][0] == z[0][0] and i[0][1]==z[0][1]:
                         flag_explore=True
                 if flag_explore==False and flag_frontier == False:
-                    frontier.append(i)    
+                    frontier.append(i)
                     list_child.append([pop_node[0],i[0]])
     #finding path
         founded_path.append(food)
@@ -1385,7 +1393,7 @@ class Maze():
             if cur[0]==ship[0] and cur[1]==ship[1]:
                 break
         founded_path.reverse()
-     #VE= 
+     #VE=
         if True == True:
             start = time.time()
             check = False
