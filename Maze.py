@@ -680,6 +680,7 @@ class Maze():
         turn = True
         prev_food = [-1 , 1]
         path = []
+        algo = int(input("Enter algorithm using when food is scanned(1. BFS, 2.Greedy-Best-First-Searh): "))
         for i in self.monster:
             save.append( [i[0], i[1], 0] )
         while check_stop:
@@ -691,7 +692,7 @@ class Maze():
                     
                  foods, monsters = self.detect_food_monster()
                  if len(foods) >= 1:
-                     self.update_path(path, prev_food, foods, 2)
+                     self.update_path(path, prev_food, foods, algo)
                      self.pacman = path.pop(0)
                  else:
                     prev_food = [-1, -1]
