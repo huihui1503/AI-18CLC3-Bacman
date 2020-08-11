@@ -515,6 +515,84 @@ class Maze():
             self.draw_map()
             pygame.display.update()
 #------------------------------------------ LV3
+    def BFS_lv3(self, path, goal):
+        check_stop = True
+        frontier_parent = []
+        expanded_parent = []
+        self.frontier.append(self.pacman)
+        frontier_parent.append(-1)
+        while check_stop:
+            if len(self.frontier) == 0:
+                path.append(self.pacman)
+                path.append(self.pacman)
+                break
+            self.expanded.append(self.frontier[0])
+            self.frontier = self.frontier[1:]
+            expanded_parent.append(frontier_parent[0])
+            frontier_parent = frontier_parent[1:]
+            adjacency_node = self.ACTION(
+                self.expanded[len(self.expanded) - 1], 1)
+            for i in adjacency_node:
+                if not i in self.expanded:
+                    if i[0] == goal[0] and i[1] == goal[1]:
+                        expanded_parent.append(len(self.expanded) - 1)
+                        self.expanded.append(i)
+                        parent_pos = len(self.expanded) - 1
+                        while parent_pos != -1:
+                            path.append(self.expanded[parent_pos])
+                            parent_pos = expanded_parent[parent_pos]
+                        path = path.reverse()
+                        check_stop = False
+                    else:
+                        if not i in self.frontier:
+                            frontier_parent.append(len(self.expanded) - 1)
+                            self.frontier.append(i)
+        self.expanded.clear()
+        self.frontier.clear()
+    def child_not_in(self, child, List):
+        for items in List:
+            if items[1][0] == child[0] and items[1][1] == child[1]:
+                return False
+        return True
+        
+    def mahattan(self, pacman, goal):
+        return abs(pacman[0] - goal[0]) + abs(pacman[1] + goal[1])
+    def Greedy_lv3(self, path, goal):
+        check_stop = True
+        self.frontier.append( (self.pacman, self.pacman, 0) ) #(parent, child, manhattan)
+       
+        while check_stop:
+            if len(self.frontier) == 0:
+                path.append(self.pacman)
+                path.append(self.pacman)
+                break
+            self.frontier.sort(key=lambda tup: tup[2])
+            node = self.frontier.pop(0)
+            self.expanded.append(node)
+            if node[1][0] == goal[0] and node[1][1] == goal[1]:
+                break
+            adjacency_node = self.ACTION(node[1], 1)
+               
+            for child in adjacency_node:
+                h = self.mahattan(child, goal)
+                if self.child_not_in(child, self.expanded) and self.child_not_in(child, self.frontier):
+                    self.frontier.append( (node[1], child, h) )
+                    
+                    
+        path.append(self.expanded[-1][1])
+        current_parent = self.expanded[-1][0]
+        while True:
+            if current_parent[0] == self.pacman[0] and current_parent[1] == self.pacman[1]:
+                path.append(current_parent)
+                break
+            for i in self.expanded:
+                if i[1][0] == current_parent[0] and i[1][1] == current_parent[1]:
+                    path.append(i[1])
+                    current_parent = i[0]
+                    break           
+        path = path.reverse()
+        self.expanded.clear()
+        self.frontier.clear()
     def monster_move_random(self, current, initial):
        rowc = current[0]
        rowi = initial[0]
@@ -575,15 +653,33 @@ class Maze():
         else:
             cost_path[position[0][0]][position[0][1]]-=1
             position = position[0]
-      
+        
         return position
     
+    def update_path(self, path, prev_food, food_detect, type_search):
+        flag = True
+
+        for i in food_detect:
+            if i[0] == prev_food[0] and i[1] == prev_food[1]:
+                flag = False
+                break        
+        if flag == True:
+            path.clear()
+            prev_food[0] = food_detect[0][0]
+            prev_food[1] = food_detect[0][1]
+            if type_search == 1:
+                self.BFS_lv3(path, food_detect[0]) #set up new path if goal now != goal previous
+            elif type_search == 2:
+                self.Greedy_lv3(path, food_detect[0]) #set up new path if goal now != goal previous
+            
     def run_level3(self):
         initial_monster = self.monster.copy()
-        cost_path = [[10 for _ in range(self.col)]for _ in range(self.row)]
+        cost_path = [[100 for _ in range(self.col)]for _ in range(self.row)]
         save = []
         check_stop = True
         turn = True
+        prev_food = [-1 , 1]
+        path = []
         for i in self.monster:
             save.append( [i[0], i[1], 0] )
         while check_stop:
@@ -591,18 +687,23 @@ class Maze():
                 if event.type == pygame.QUIT:
                     break
             if turn == True:
-                    self.map[self.pacman[0]][self.pacman[1]] = 0
-                    foods, monsters = self.detect_food_monster()
-                    if len(foods) >= 1:
-                        self.pacman = self.BFS(self.pacman, foods[0])
-                    else:
-                        self.pacman = self.choose_path_lv3(cost_path)
-                    self.map[self.pacman[0]][self.pacman[1]] = 4
-                    for i, a in enumerate(self.food):
-                        if a[0] == self.pacman[0] and a[1] == self.pacman[1]:
-                            self.food.pop(i)
-                            break
-                    turn = False
+                 self.map[self.pacman[0]][self.pacman[1]] = 0
+                    
+                 foods, monsters = self.detect_food_monster()
+                 if len(foods) >= 1:
+                     self.update_path(path, prev_food, foods, 2)
+                     self.pacman = path.pop(0)
+                 else:
+                    prev_food = [-1, -1]
+                    path.clear()
+                    self.pacman = self.choose_path_lv3(cost_path)
+                        
+                 self.map[self.pacman[0]][self.pacman[1]] = 4
+                 for i, a in enumerate(self.food):
+                     if a[0] == self.pacman[0] and a[1] == self.pacman[1]:
+                         self.food.pop(i)
+                         break
+                 turn = False
             else:
                 for i in range(len(self.monster)):
                     refill = save.pop(0)
