@@ -24,13 +24,13 @@ while running:
             running = False
     if level == 1:
         main.run_level1()
-        level_running = False
+        running = False
     if level == 2:
         main.run_level2()
-        level_running = False
+        running = False
     if level == 3:
         main.run_level3()
-        level_running = False
+        running = False
     if level == 4:
         main.run_level4()
-        level_running = False
+        running = False
