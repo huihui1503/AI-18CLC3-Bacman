@@ -258,9 +258,7 @@ class Maze():
     def heuristic(self, node, goal):
         pos = self.action_level2[node]
         pos_goal = self.action_level2[goal]
-        a = pos[0] + pos[1]
-        b = pos_goal[0] + pos_goal[1]
-        return abs(a - b)
+        return abs(pos_goal[0] - pos[0]) + abs(pos_goal[1] - pos[1])
 
     def sortHeuristic(self, a, n, goal):
         # sort by heuristic number
