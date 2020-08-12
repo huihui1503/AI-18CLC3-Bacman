@@ -974,7 +974,6 @@ class Maze():
         founded_path = list()
         frontier = list()
         explore = list()
-        list_child = list()
         init_node = ship
         frontier.append(ship)
         if (ship[0]==food[0] and ship[1]==food[1]):
@@ -1051,7 +1050,7 @@ class Maze():
                     break
                 cur = founded_path[pos]
                 self.map[re[0]][re[1]] = 0
-                #self.map[cur[0]][cur[1]] = 4
+                self.map[cur[0]][cur[1]] = 4
                 clock.tick(5)
                 self.draw_map()
                 pygame.display.update()
@@ -1071,7 +1070,6 @@ class Maze():
         founded_path = list()
         frontier = list()# frontier = [*[[x,y],1]*,*[[x,y],2]*]
         explore = list()
-        list_child = list()
         init_node = [ship,0] #init_node = [ship= [x,y],cost= int]
         frontier.append(init_node)
         if (ship[0]==food[0] and ship[1]==food[1]):
@@ -1185,7 +1183,6 @@ class Maze():
         founded_path = list()
         frontier = list()# frontier = [*[[x,y],1]*,*[[x,y],2]*]
         explore = list()
-        list_child = list()
         init_node = [ship,0] #init_node = [ship= [x,y],cost= int]
         frontier.append(init_node)
         if (ship[0]==food[0] and ship[1]==food[1]):
@@ -1312,7 +1309,6 @@ class Maze():
         founded_path = list()
         frontier = list()# frontier = [*[[x,y],1]*,*[[x,y],2]*]
         explore = list()
-        list_child = list()
         h_ship = pow(pow(food[0]-ship[0],2)+pow(food[1]-ship[1],2),1.0/2)
         init_node = [ship,0,h_ship] #init_node = [ship= [x,y],cost= int,h=float]
         frontier.append(init_node)
