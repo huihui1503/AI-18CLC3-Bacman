@@ -488,7 +488,7 @@ class Maze():
             while check:
                 for i in range(len(move)):
                     if i != 0:
-                        #clock.tick(5)
+                        clock.tick(5)
                         re = move[i - 1]
                         pos = move[i]
                         self.map[re[0]][re[1]] = 0
@@ -505,7 +505,7 @@ class Maze():
                 print("Point: ", 20 - len(path))
                 check = False
 
-            #clock.tick(5)
+            clock.tick(5)
             self.draw_map()
             pygame.display.update()
         else:
