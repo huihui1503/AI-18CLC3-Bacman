@@ -554,13 +554,13 @@ class Maze():
             if items[1][0] == child[0] and items[1][1] == child[1]:
                 return False
         return True
-        
+
     def mahattan(self, pacman, goal):
         return abs(pacman[0] - goal[0]) + abs(pacman[1] + goal[1])
     def Greedy_lv3(self, path, goal):
         check_stop = True
         self.frontier.append( (self.pacman, self.pacman, 0) ) #(parent, child, manhattan)
-       
+
         while check_stop:
             if len(self.frontier) == 0:
                 path.append(self.pacman)
@@ -572,13 +572,13 @@ class Maze():
             if node[1][0] == goal[0] and node[1][1] == goal[1]:
                 break
             adjacency_node = self.ACTION(node[1], 1)
-               
+
             for child in adjacency_node:
                 h = self.mahattan(child, goal)
                 if self.child_not_in(child, self.expanded) and self.child_not_in(child, self.frontier):
                     self.frontier.append( (node[1], child, h) )
-                    
-                    
+
+
         path.append(self.expanded[-1][1])
         current_parent = self.expanded[-1][0]
         while True:
@@ -589,7 +589,7 @@ class Maze():
                 if i[1][0] == current_parent[0] and i[1][1] == current_parent[1]:
                     path.append(i[1])
                     current_parent = i[0]
-                    break           
+                    break
         path = path.reverse()
         self.expanded.clear()
         self.frontier.clear()
@@ -654,16 +654,16 @@ class Maze():
             cost_path[position[0][0]][position[0][1]]-=1
             position = position[0]
 
-        
+
         return position
-    
+
     def update_path(self, path, prev_food, food_detect, type_search):
         flag = True
 
         for i in food_detect:
             if i[0] == prev_food[0] and i[1] == prev_food[1]:
                 flag = False
-                break        
+                break
         if flag == True:
             path.clear()
             prev_food[0] = food_detect[0][0]
@@ -682,7 +682,7 @@ class Maze():
         turn = True
         prev_food = [-1 , 1]
         path = []
-        algo = int(input("Enter algorithm using when food is scanned(1. BFS, 2.Greedy-Best-First-Searh): "))
+        algo = int(input("Enter algorithm to scan food(1. BFS, 2.Greedy-Best-First-Searh): "))
         for i in self.monster:
             save.append( [i[0], i[1], 0] )
         while check_stop:
@@ -691,7 +691,7 @@ class Maze():
                     break
             if turn == True:
                  self.map[self.pacman[0]][self.pacman[1]] = 0
-                    
+
                  foods, monsters = self.detect_food_monster()
                  if len(foods) >= 1:
                      self.update_path(path, prev_food, foods, algo)
@@ -700,7 +700,7 @@ class Maze():
                     prev_food = [-1, -1]
                     path.clear()
                     self.pacman = self.choose_path_lv3(cost_path)
-                        
+
                  self.map[self.pacman[0]][self.pacman[1]] = 4
                  for i, a in enumerate(self.food):
                      if a[0] == self.pacman[0] and a[1] == self.pacman[1]:
@@ -725,6 +725,8 @@ class Maze():
             pygame.display.update()
 #-----------------------------------------------------------
     def run_level4(self):
+        start = time.time()
+        step=0
         cost_path = [[100 for _ in range(self.col)]for _ in range(self.row)]
         check_stop = True
         turn = True
@@ -737,7 +739,10 @@ class Maze():
                 for i, a in enumerate(self.food):
                     if a[0] == self.pacman[0] and a[1] == self.pacman[1]:
                         self.food.pop(i)
+                        self.point+=20
                         break
+                self.point-=1
+                step+=1
                 turn = False
             else:
                 #print("MONSTER")
@@ -753,6 +758,10 @@ class Maze():
                     self.map[i[0]][i[1]] = 3
                 turn = True
             if self.check_stop():
+                end=time.time()
+                print("Time to finished: ", end - start)
+                print("The length of the discovered paths: ", step)
+                print("Point: ", self.point)
                 check_stop = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -768,6 +777,7 @@ class Maze():
             return True
         for i in self.monster:
             if i[0] == self.pacman[0] and i[1] == self.pacman[1]:
+                self.map[i[0]][i[1]]=3
                 return True
         return False
  # min max algorithm
